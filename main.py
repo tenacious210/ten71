@@ -23,7 +23,7 @@ class Bot(DGGBot):
                  qd_record=99.9, qd_rec_holder='ten71', last_message=''):
         super().__init__(auth_token=auth_token, username=username, prefix=prefix)
         self.enabled = True
-        self.cooldowns = {"yump": False}
+        self.cooldowns = {"yump": False, "nextchatter": False}
         self.last_message = {"content": last_message, "time": datetime.now()}
         self.quickdraw = {"time_started": datetime.now(), "waiting": False,
                           "record_time": qd_record, "record_holder": qd_rec_holder}
@@ -52,6 +52,9 @@ class Bot(DGGBot):
         if (self.quickdraw["waiting"] and
            msg.data in ["YEEHAW", "PARDNER"]):
             self.end_quickdraw(msg)
+        if ("next chatter" in msg.data) and self.cooldowns["nextchatter"] is False:
+            self.queue_send(f'> {msg.nick} no u GIGACHAD')
+            self.start_cooldown("nextchatter", 21600)
 
     def queue_send(self, message: str):
         current_time = datetime.now()
@@ -107,7 +110,7 @@ qd_timer.start()
 
 @dggbot.mention()
 def yump(msg):
-    if ("MiyanoHype" in msg.data) and not (isinstance(dggbot.cooldowns["yump"], Timer)):
+    if "MiyanoHype" in msg.data and dggbot.cooldowns["yump"] is False:
         if isinstance(msg, PrivateMessage):
             dggbot.send_privmsg(msg.nick, f'{msg.nick} MiyanoHype')
         else:
@@ -135,7 +138,7 @@ def disable(msg):
 
 
 @dggbot.command("ten71enable")
-def disable(msg):
+def enable(msg):
     dggbot.enabled = True
     if isinstance(msg, PrivateMessage):
         dggbot.send_privmsg(msg.nick, "Enabled!")
