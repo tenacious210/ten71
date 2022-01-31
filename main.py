@@ -54,7 +54,7 @@ class Bot(DGGBot):
             self.end_quickdraw(msg)
         if ("next chatter" in msg.data.lower()) and self.cooldowns["nextchatter"] is False:
             self.queue_send(f'> {msg.nick} no u GIGACHAD')
-            self.start_cooldown("nextchatter", 21600)
+            self.start_cooldown("nextchatter", 10800)
 
     def queue_send(self, message: str):
         current_time = datetime.now()
