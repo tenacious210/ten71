@@ -52,7 +52,7 @@ class Bot(DGGBot):
         if (self.quickdraw["waiting"] and
            msg.data in ["YEEHAW", "PARDNER"]):
             self.end_quickdraw(msg)
-        if ("next chatter" in msg.data) and self.cooldowns["nextchatter"] is False:
+        if ("next chatter" in msg.data.lower()) and self.cooldowns["nextchatter"] is False:
             self.queue_send(f'> {msg.nick} no u GIGACHAD')
             self.start_cooldown("nextchatter", 21600)
 
