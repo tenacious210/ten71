@@ -20,6 +20,7 @@ class Bot(DGGBot):
                  qd_record=99.9, qd_rec_holder='ten71', last_message=''):
         super().__init__(auth_token=auth_token, username=username, prefix=prefix)
         self.enabled = True
+        self.loaded_message = False
         self.cooldowns = {"yump": False, "nextchatter": False}
         self.last_message = {"content": last_message, "time": datetime.now()}
         self.quickdraw = {"time_started": datetime.now(), "waiting": False,
@@ -49,6 +50,11 @@ class Bot(DGGBot):
         if (self.quickdraw["waiting"] and
            msg.data in ["YEEHAW", "PARDNER"]):
             self.end_quickdraw(msg)
+        if (self.loaded_message is not False and
+           msg.data == self.loaded_message and
+           msg.nick in self.admins):
+            self.queue_send(self.loaded_message)
+            self.loaded_message = False
         if ("next chatter" in msg.data.lower()) and self.cooldowns["nextchatter"] is False:
             self.queue_send(f'> {msg.nick} no u GIGACHAD')
             self.start_cooldown("nextchatter", 10800)

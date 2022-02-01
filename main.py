@@ -41,6 +41,12 @@ def test(msg):
     dggbot.queue_send(msg.data[6:])
 
 
+@dggbot.command("load")
+def load(msg):
+    dggbot.send_privmsg(msg.nick, f'{msg.data[6:]} loaded')
+    dggbot.loaded_message = msg.data[6:]
+
+
 @dggbot.command("ten71disable")
 def disable(msg):
     dggbot.enabled = False
