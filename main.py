@@ -28,7 +28,7 @@ def yump(msg):
             dggbot.send_privmsg(msg.nick, f'{msg.nick} MiyanoHype')
         else:
             dggbot.queue_send(f'{msg.nick} MiyanoHype')
-            dggbot.start_cooldown("yump")
+        dggbot.start_cooldown("yump")
 
 
 @dggbot.command("qd")
@@ -73,6 +73,16 @@ def set_debug_level(msg):
         dggbot.send_privmsg(msg.nick, f'Logging level set to {lvl}')
     else:
         dggbot.send_privmsg(msg.nick, f'{lvl} is not a valid logging level')
+
+
+@dggbot.command("endcd")
+def end_cd(msg):
+    cd_key = msg.data[7:]
+    if cd_key in dggbot.cooldowns:
+        dggbot.cooldowns[cd_key] = False
+        dggbot.send_privmsg(msg.nick, f"Ended cooldown for {cd_key}")
+    else:
+        dggbot.send_privmsg(msg.nick, f'No cooldown named "{cd_key}"')
 
 
 while True:
