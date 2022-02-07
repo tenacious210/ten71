@@ -13,23 +13,16 @@ class RepeatTimer(Timer):
             self.function(*self.args, **self.kwargs)
 
 
-class Bot(DGGBot):
-    admins = ('tena', 'Fritz', 'RightToBearArmsLOL', 'Cake', 'Destiny')
-
-    def __init__(self, auth_token, username, prefix='!',
+class CustomBot(DGGBot):
+    def __init__(self, auth_token, username, owner="tena", prefix='!',
                  qd_record=99.9, qd_rec_holder='ten71', last_message=''):
-        super().__init__(auth_token=auth_token, username=username, prefix=prefix)
+        super().__init__(auth_token=auth_token, username=username, prefix=prefix, owner=owner)
         self.enabled = True
         self.loaded_message = False
         self.cooldowns = {"yump": False, "nextchatter": False}
         self.last_message = {"content": last_message, "time": datetime.now()}
         self.quickdraw = {"time_started": datetime.now(), "waiting": False,
                           "record_time": qd_record, "record_holder": qd_rec_holder}
-
-    def on_command(self, msg: Message):
-        cmd = msg.data.split(' ')[0][1:]
-        if cmd in self._commands and msg.nick in self.admins:
-            self._commands[cmd](msg)
 
     def on_broadcast(self, msg):
         if msg.data == "Destiny is live! AngelThump":
@@ -50,7 +43,7 @@ class Bot(DGGBot):
         if (self.quickdraw["waiting"] and
            msg.data in ["YEEHAW", "PARDNER"]):
             self.end_quickdraw(msg)
-        if (self.loaded_message is not False and
+        if (not self.loaded_message and
            msg.data == self.loaded_message and
            msg.nick in self.admins):
             self.queue_send(self.loaded_message)
@@ -65,9 +58,9 @@ class Bot(DGGBot):
             message += " ."
         if (current_time - self.last_message["time"]).total_seconds() < 1:
             time.sleep(1)
-        self.send(message)
+        # self.send(message)
         # For debugging:
-        # self.send_privmsg("tena", message)
+        self.send_privmsg("tena", message)
         self.last_message["content"] = message
         self.last_message["time"] = current_time
         self.write_to_info()
