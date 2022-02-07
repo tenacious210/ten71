@@ -8,20 +8,24 @@ import logging
 import json
 
 
-with Path(__file__).with_name('info.json').open('r') as f:
+with Path(__file__).with_name("info.json").open("r") as f:
     json_info = json.loads(f.read())
 
-dggbot = CustomBot(auth_token=getenv("DGG_AUTH"),
-                   username="ten71", owner="tena", last_message=json_info["last_message"],
-                   qd_record=json_info["quickdraw_stats"]["record_time"],
-                   qd_rec_holder=json_info["quickdraw_stats"]["record_holder"])
+dggbot = CustomBot(
+    auth_token=getenv("DGG_AUTH"),
+    username="ten71",
+    owner="tena",
+    last_message=json_info["last_message"],
+    qd_record=json_info["quickdraw_stats"]["record_time"],
+    qd_rec_holder=json_info["quickdraw_stats"]["record_holder"],
+)
 
 qd_timer = RepeatTimer(randint(18000, 25200), dggbot.start_quickdraw)
 qd_timer.start()
 
 
 def is_admin(msg: Message):
-    return msg.nick in ('tena', 'Fritz', 'RightToBearArmsLOL', 'Cake', 'Destiny')
+    return msg.nick in ("tena", "Fritz", "RightToBearArmsLOL", "Cake", "Destiny")
 
 
 def is_enabled(bot: CustomBot):
@@ -33,24 +37,39 @@ def on_broadcast(msg):
     if msg.data == "Destiny is live! AngelThump":
         dggbot.enabled = False
         dggbot.queue_send("Disabled!")
-    elif msg.data == 'Destiny is offline... I enjoyed my stay. dggL':
+    elif msg.data == "Destiny is offline... I enjoyed my stay. dggL":
         dggbot.enabled = True
         dggbot.queue_send("Enabled!")
 
 
 @dggbot.event("on_msg")
 def end_qd(msg):
-    if (dggbot.quickdraw["waiting"] and msg.data in ("YEEHAW", "PARDNER")):
+    if dggbot.quickdraw["waiting"] and msg.data in ("YEEHAW", "PARDNER"):
         dggbot.end_quickdraw(msg)
 
 
-@dggbot.mention()
+@dggbot.event("on_msg")
+def send_loaded_msg(msg):
+    if (
+        not dggbot.loaded_message
+        and msg.data == dggbot.loaded_message
+        and msg.nick in dggbot.admins
+    ):
+        dggbot.queue_send(dggbot.loaded_message)
+        dggbot.loaded_message = False
+
+
+@dggbot.event("on_msg")
+def nextchatter_reply(msg):
+    if "next chatter" in msg.data.lower() and dggbot.cooldowns["nextchatter"] is False:
+        dggbot.queue_send(f"> {msg.nick} no u GIGACHAD")
+        dggbot.start_cooldown("nextchatter", 10800)
+
+
+@dggbot.event("on_mention")
 def yump(msg):
     if "MiyanoHype" in msg.data and dggbot.cooldowns["yump"] is False:
-        if isinstance(msg, PrivateMessage):
-            dggbot.send_privmsg(msg.nick, f'{msg.nick} MiyanoHype')
-        else:
-            dggbot.queue_send(f'{msg.nick} MiyanoHype')
+        msg.reply(f"{msg.nick} MiyanoHype")
         dggbot.start_cooldown("yump")
 
 
@@ -69,7 +88,7 @@ def test(msg):
 @dggbot.command(["load"])
 @dggbot.check(is_admin)
 def load_command(msg):
-    dggbot.send_privmsg(msg.nick, f'{msg.data[6:]} loaded')
+    dggbot.send_privmsg(msg.nick, f"{msg.data[6:]} loaded")
     dggbot.loaded_message = msg.data[6:]
 
 
@@ -96,12 +115,12 @@ def enable_command(msg):
 @dggbot.command(["loglevel"])
 @dggbot.check(is_admin)
 def set_debug_level(msg):
-    lvl = msg.data.split(' ')[1]
+    lvl = msg.data.split(" ")[1]
     if lvl.upper() in ["NOTSET", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
         logging.basicConfig(force=True, level=lvl.upper())
-        dggbot.send_privmsg(msg.nick, f'Logging level set to {lvl}')
+        dggbot.send_privmsg(msg.nick, f"Logging level set to {lvl}")
     else:
-        dggbot.send_privmsg(msg.nick, f'{lvl} is not a valid logging level')
+        dggbot.send_privmsg(msg.nick, f"{lvl} is not a valid logging level")
 
 
 @dggbot.command(["endcd"])
@@ -118,9 +137,9 @@ def end_cd(msg):
 @dggbot.command(["countdown", "cd"])
 @dggbot.check(is_admin)
 def countdown_command(msg, seconds=5):
-    message, seconds = msg.data[4:].split(' , ')
+    message, seconds = msg.data[4:].split(" , ")
     for second in reversed(range(seconds)):
-        dggbot.queue_send(f'> {message} in {second}')
+        dggbot.queue_send(f"> {message} in {second}")
 
 
 while True:

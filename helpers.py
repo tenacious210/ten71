@@ -14,43 +14,29 @@ class RepeatTimer(Timer):
 
 
 class CustomBot(DGGBot):
-    def __init__(self, auth_token, username, owner="tena", prefix='!',
-                 qd_record=99.9, qd_rec_holder='ten71', last_message=''):
-        super().__init__(auth_token=auth_token, username=username, prefix=prefix, owner=owner)
+    def __init__(
+        self,
+        auth_token,
+        username,
+        owner,
+        qd_record,
+        qd_rec_holder,
+        last_message,
+        prefix="!",
+    ):
+        super().__init__(
+            auth_token=auth_token, username=username, prefix=prefix, owner=owner
+        )
         self.enabled = True
         self.loaded_message = False
         self.cooldowns = {"yump": False, "nextchatter": False}
         self.last_message = {"content": last_message, "time": datetime.now()}
-        self.quickdraw = {"time_started": datetime.now(), "waiting": False,
-                          "record_time": qd_record, "record_holder": qd_rec_holder}
-
-    def on_broadcast(self, msg):
-        if msg.data == "Destiny is live! AngelThump":
-            self.enabled = False
-        elif msg.data == 'Destiny is offline... I enjoyed my stay. dggL':
-            self.enabled = True
-
-    def on_privmsg(self, msg):
-        if self.is_command(msg):
-            self.on_command(msg)
-        if (self.quickdraw["waiting"] and
-           msg.data in ["YEEHAW", "PARDNER"]):
-            self.end_quickdraw(msg)
-
-    def on_msg(self, msg: Message):
-        if self.is_command(msg):
-            self.on_command(msg)
-        if (self.quickdraw["waiting"] and
-           msg.data in ["YEEHAW", "PARDNER"]):
-            self.end_quickdraw(msg)
-        if (not self.loaded_message and
-           msg.data == self.loaded_message and
-           msg.nick in self.admins):
-            self.queue_send(self.loaded_message)
-            self.loaded_message = False
-        if ("next chatter" in msg.data.lower()) and self.cooldowns["nextchatter"] is False:
-            self.queue_send(f'> {msg.nick} no u GIGACHAD')
-            self.start_cooldown("nextchatter", 10800)
+        self.quickdraw = {
+            "time_started": datetime.now(),
+            "waiting": False,
+            "record_time": qd_record,
+            "record_holder": qd_rec_holder,
+        }
 
     def queue_send(self, message: str):
         current_time = datetime.now()
@@ -74,9 +60,9 @@ class CustomBot(DGGBot):
         self.quickdraw["waiting"] = False
         delta = datetime.now() - self.quickdraw["time_started"]
         response_time = round(delta.total_seconds(), 2)
-        ending_message = f'{msg.data} {msg.nick} shot first! Response time: {response_time} seconds. '
+        ending_message = f"{msg.data} {msg.nick} shot first! Response time: {response_time} seconds. "
         if response_time < self.quickdraw["record_time"]:
-            ending_message += 'New record!'
+            ending_message += "New record!"
             self.quickdraw["record_time"] = response_time
             self.quickdraw["record_holder"] = msg.nick
             self.write_to_info()
@@ -96,10 +82,10 @@ class CustomBot(DGGBot):
             "last_message": self.last_message["content"],
             "quickdraw_stats": {
                 "record_time": self.quickdraw["record_time"],
-                "record_holder": self.quickdraw["record_holder"]
-                }
+                "record_holder": self.quickdraw["record_holder"],
+            },
         }
-        info_file = Path(__file__).with_name('info.json')
-        with info_file.open('w') as info:
+        info_file = Path(__file__).with_name("info.json")
+        with info_file.open("w") as info:
             json.dump(info_dict, info)
         return
