@@ -1,4 +1,4 @@
-from dggbot.message import Message, PrivateMessage
+from dggbot.message import Message
 from helpers import CustomBot, RepeatTimer
 from os import getenv
 from pathlib import Path
@@ -43,33 +43,33 @@ def on_broadcast(msg):
 
 
 @dggbot.event("on_msg")
+@dggbot.event("on_privmsg")
 def end_qd(msg):
     if dggbot.quickdraw["waiting"] and msg.data in ("YEEHAW", "PARDNER"):
         dggbot.end_quickdraw(msg)
 
 
 @dggbot.event("on_msg")
+@dggbot.event("on_privmsg")
+@dggbot.check(is_admin)
 def send_loaded_msg(msg):
-    if (
-        not dggbot.loaded_message
-        and msg.data == dggbot.loaded_message
-        and msg.nick in dggbot.admins
-    ):
+    if not dggbot.loaded_message and msg.data == dggbot.loaded_message:
         dggbot.queue_send(dggbot.loaded_message)
         dggbot.loaded_message = False
 
 
 @dggbot.event("on_msg")
+@dggbot.event("on_privmsg")
 def nextchatter_reply(msg):
     if "next chatter" in msg.data.lower() and dggbot.cooldowns["nextchatter"] is False:
         dggbot.queue_send(f"> {msg.nick} no u GIGACHAD")
-        dggbot.start_cooldown("nextchatter", 10800)
+        dggbot.start_cooldown("nextchatter", 9000)
 
 
 @dggbot.event("on_mention")
 def yump(msg):
     if "MiyanoHype" in msg.data and dggbot.cooldowns["yump"] is False:
-        msg.reply(f"{msg.nick} MiyanoHype")
+        dggbot.queue_send(f"{msg.nick} MiyanoHype")
         dggbot.start_cooldown("yump")
 
 
@@ -82,50 +82,44 @@ def qd_command(msg):
 @dggbot.command(["send", "s"])
 @dggbot.check(is_admin)
 def test(msg):
-    dggbot.queue_send(msg.data[6:])
+    dggbot.queue_send(msg.data.split(maxsplit=1)[1])
 
 
 @dggbot.command(["load"])
 @dggbot.check(is_admin)
 def load_command(msg):
-    dggbot.send_privmsg(msg.nick, f"{msg.data[6:]} loaded")
-    dggbot.loaded_message = msg.data[6:]
+    dggbot.send_privmsg(msg.nick, f"{msg.data.split(maxsplit=1)[1]} loaded")
+    dggbot.loaded_message = msg.data.split(maxsplit=1)[1]
 
 
 @dggbot.command(["disable"])
 @dggbot.check(is_admin)
 def disable_command(msg):
     dggbot.enabled = False
-    if isinstance(msg, PrivateMessage):
-        dggbot.send_privmsg(msg.nick, "Disabled!")
-    else:
-        dggbot.queue_send("Disabled!")
+    msg.reply("Disabled!")
 
 
 @dggbot.command(["enable"])
 @dggbot.check(is_admin)
 def enable_command(msg):
     dggbot.enabled = True
-    if isinstance(msg, PrivateMessage):
-        dggbot.send_privmsg(msg.nick, "Enabled!")
-    else:
-        dggbot.queue_send("Enabled!")
+    msg.reply("Enabled!")
 
 
 @dggbot.command(["loglevel"])
 @dggbot.check(is_admin)
-def set_debug_level(msg):
+def loglevel_command(msg):
     lvl = msg.data.split(" ")[1]
-    if lvl.upper() in ["NOTSET", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
+    if lvl.upper() in ("NOTSET", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"):
         logging.basicConfig(force=True, level=lvl.upper())
         dggbot.send_privmsg(msg.nick, f"Logging level set to {lvl}")
     else:
         dggbot.send_privmsg(msg.nick, f"{lvl} is not a valid logging level")
 
 
-@dggbot.command(["endcd"])
+@dggbot.command(["endcooldown"])
 @dggbot.check(is_admin)
-def end_cd(msg):
+def end_cooldown_command(msg):
     cd_key = msg.data[7:]
     if cd_key in dggbot.cooldowns:
         dggbot.cooldowns[cd_key] = False
@@ -134,12 +128,14 @@ def end_cd(msg):
         dggbot.send_privmsg(msg.nick, f'No cooldown named "{cd_key}"')
 
 
-@dggbot.command(["countdown", "cd"])
+@dggbot.command(["cd"])
 @dggbot.check(is_admin)
-def countdown_command(msg, seconds=5):
-    message, seconds = msg.data[4:].split(" , ")
+def countdown_command(msg):
+    message = msg.data[4:].split(" , ")[0] if " , " in msg.data else msg.data[4:]
+    seconds = int(msg.data[4:].split(" , ")[1]) if " , " in msg.data else 3
     for second in reversed(range(seconds)):
-        dggbot.queue_send(f"> {message} in {second}")
+        dggbot.queue_send(f"> {message} in {second + 1}")
+        sleep(1 if seconds <= 5 else 2)
 
 
 while True:

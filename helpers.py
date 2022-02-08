@@ -44,17 +44,19 @@ class CustomBot(DGGBot):
             message += " ."
         if (current_time - self.last_message["time"]).total_seconds() < 1:
             time.sleep(1)
-        # self.send(message)
+        self.send(message)
         # For debugging:
-        self.send_privmsg("tena", message)
+        # self.send_privmsg("tena", message)
         self.last_message["content"] = message
         self.last_message["time"] = current_time
         self.write_to_info()
 
     def start_quickdraw(self, *args):
-        self.queue_send("> QUICKDRAW! PARDNER vs YEEHAW")
-        self.quickdraw["waiting"] = True
-        self.quickdraw["time_started"] = datetime.now()
+        if self.enabled:
+            self.queue_send("> QUICKDRAW! PARDNER vs YEEHAW")
+            self.quickdraw["waiting"] = True
+            self.quickdraw["time_started"] = datetime.now()
+        return
 
     def end_quickdraw(self, msg: Message):
         self.quickdraw["waiting"] = False
