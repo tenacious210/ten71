@@ -29,7 +29,11 @@ class CustomBot(DGGBot):
         )
         self.enabled = True
         self.loaded_message = False
-        self.cooldowns = {"yump": False, "nextchatter": False}
+        self.cooldowns = {
+            "yump": False,
+            "nextchatter": False,
+            "obamna": False,
+        }
         self.last_message = {"content": last_message, "time": datetime.now()}
         self.quickdraw = {
             "time_started": datetime.now(),

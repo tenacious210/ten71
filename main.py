@@ -53,7 +53,7 @@ def end_qd(msg):
 @dggbot.event("on_privmsg")
 @dggbot.check(is_admin)
 def send_loaded_msg(msg):
-    if not dggbot.loaded_message and msg.data == dggbot.loaded_message:
+    if dggbot.loaded_message and msg.data == dggbot.loaded_message:
         dggbot.queue_send(dggbot.loaded_message)
         dggbot.loaded_message = False
 
@@ -71,6 +71,13 @@ def yump(msg):
     if "MiyanoHype" in msg.data and dggbot.cooldowns["yump"] is False:
         dggbot.queue_send(f"{msg.nick} MiyanoHype")
         dggbot.start_cooldown("yump")
+
+
+@dggbot.command(["obamna"])
+def obamna_command(msg):
+    if dggbot.cooldowns["obamna"] is False:
+        dggbot.queue_send("obamna")
+        dggbot.start_cooldown("obamna", 600)
 
 
 @dggbot.command(["quickdraw", "qd"])
@@ -117,10 +124,10 @@ def loglevel_command(msg):
         dggbot.send_privmsg(msg.nick, f"{lvl} is not a valid logging level")
 
 
-@dggbot.command(["endcooldown"])
+@dggbot.command(["endcooldown", "endcd"])
 @dggbot.check(is_admin)
 def end_cooldown_command(msg):
-    cd_key = msg.data[7:]
+    cd_key = msg.data.split(maxsplit=1)[1]
     if cd_key in dggbot.cooldowns:
         dggbot.cooldowns[cd_key] = False
         dggbot.send_privmsg(msg.nick, f"Ended cooldown for {cd_key}")
