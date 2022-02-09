@@ -51,9 +51,8 @@ def end_qd(msg):
 
 @dggbot.event("on_msg")
 @dggbot.event("on_privmsg")
-@dggbot.check(is_admin)
 def send_loaded_msg(msg):
-    if dggbot.loaded_message and msg.data == dggbot.loaded_message:
+    if dggbot.loaded_message and is_admin(msg) and msg.data == dggbot.loaded_message:
         dggbot.queue_send(dggbot.loaded_message)
         dggbot.loaded_message = False
 
@@ -61,21 +60,21 @@ def send_loaded_msg(msg):
 @dggbot.event("on_msg")
 @dggbot.event("on_privmsg")
 def nextchatter_reply(msg):
-    if "next chatter" in msg.data.lower() and dggbot.cooldowns["nextchatter"] is False:
+    if "next chatter" in msg.data.lower() and not dggbot.cooldowns["nextchatter"]:
         dggbot.queue_send(f"> {msg.nick} no u GIGACHAD")
         dggbot.start_cooldown("nextchatter", 9000)
 
 
 @dggbot.event("on_mention")
 def yump(msg):
-    if "MiyanoHype" in msg.data and dggbot.cooldowns["yump"] is False:
+    if "MiyanoHype" in msg.data and not dggbot.cooldowns["yump"]:
         dggbot.queue_send(f"{msg.nick} MiyanoHype")
         dggbot.start_cooldown("yump")
 
 
 @dggbot.command(["obamna"])
 def obamna_command(msg):
-    if dggbot.cooldowns["obamna"] is False:
+    if not dggbot.cooldowns["obamna"]:
         dggbot.queue_send("obamna")
         dggbot.start_cooldown("obamna", 600)
 
@@ -116,9 +115,9 @@ def enable_command(msg):
 @dggbot.command(["loglevel"])
 @dggbot.check(is_admin)
 def loglevel_command(msg):
-    lvl = msg.data.split(" ")[1]
-    if lvl.upper() in ("NOTSET", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"):
-        logging.basicConfig(force=True, level=lvl.upper())
+    lvl = logging.getLevelName(msg.data.split(" ")[1].upper())
+    if isinstance(lvl, int):
+        logging.basicConfig(force=True, level=lvl)
         dggbot.send_privmsg(msg.nick, f"Logging level set to {lvl}")
     else:
         dggbot.send_privmsg(msg.nick, f"{lvl} is not a valid logging level")
