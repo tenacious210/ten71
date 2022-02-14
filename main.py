@@ -6,7 +6,7 @@ from random import randint
 from time import sleep
 import logging
 import json
-
+import re
 
 with Path(__file__).with_name("info.json").open("r") as f:
     json_info = json.loads(f.read())
@@ -18,6 +18,7 @@ dggbot = CustomBot(
     last_message=json_info["last_message"],
     qd_record=json_info["quickdraw_stats"]["record_time"],
     qd_rec_holder=json_info["quickdraw_stats"]["record_holder"],
+    social_credit=json_info["social_credit"],
 )
 
 qd_timer = RepeatTimer(randint(18000, 25200), dggbot.start_quickdraw)
@@ -65,6 +66,24 @@ def nextchatter_reply(msg):
         dggbot.start_cooldown("nextchatter", 9000)
 
 
+@dggbot.event("on_msg")
+@dggbot.event("on_privmsg")
+def update_social_credit(msg):
+    if msg.nick in ("tng69", "ten71"):
+        pattern = re.compile("(.*) (\\+|\\-)(69|100|1000|10000000)")
+        if pattern.fullmatch(msg.data):
+            user, amount = msg.data.split(maxsplit=1)
+            try:
+                amount = int(amount)
+            except ValueError:
+                logging.warning(f"Social credit amount '{amount}' was an invalid type")
+                return
+            if user not in dggbot.social_credit.keys():
+                dggbot.social_credit[user] = 0
+            dggbot.social_credit[user] += amount
+            dggbot.write_to_info()
+
+
 @dggbot.event("on_mention")
 def yump(msg):
     if "MiyanoHype" in msg.data and not dggbot.cooldowns["yump"]:
@@ -77,6 +96,18 @@ def obamna_command(msg):
     if not dggbot.cooldowns["obamna"]:
         dggbot.queue_send("obamna")
         dggbot.start_cooldown("obamna", 600)
+
+
+@dggbot.command(["creditcheck", "cc"])
+def creditcheck_command(msg):
+    if not dggbot.cooldowns["creditcheck"]:
+        if msg.nick in dggbot.social_credit.keys():
+            dggbot.queue_send(
+                f"{msg.nick}'s social credit score is: {dggbot.social_credit[msg.nick]} BINGQILIN",
+            )
+        else:
+            dggbot.queue_send(f"{msg.nick} has no social credit history MMMM")
+        dggbot.start_cooldown("creditcheck", 60)
 
 
 @dggbot.command(["quickdraw", "qd"])
@@ -141,7 +172,7 @@ def countdown_command(msg):
     seconds = int(msg.data[4:].split(" , ")[1]) if " , " in msg.data else 3
     for second in reversed(range(seconds)):
         dggbot.queue_send(f"> {message} in {second + 1}")
-        sleep(1 if seconds <= 5 else 2)
+        sleep(2 if seconds < 5 else 2.5)
 
 
 while True:

@@ -22,6 +22,7 @@ class CustomBot(DGGBot):
         qd_record,
         qd_rec_holder,
         last_message,
+        social_credit,
         prefix="!",
     ):
         super().__init__(
@@ -33,6 +34,7 @@ class CustomBot(DGGBot):
             "yump": False,
             "nextchatter": False,
             "obamna": False,
+            "creditcheck": False,
         }
         self.last_message = {"content": last_message, "time": datetime.now()}
         self.quickdraw = {
@@ -41,6 +43,7 @@ class CustomBot(DGGBot):
             "record_time": qd_record,
             "record_holder": qd_rec_holder,
         }
+        self.social_credit = social_credit
 
     def queue_send(self, message: str):
         current_time = datetime.now()
@@ -90,6 +93,7 @@ class CustomBot(DGGBot):
                 "record_time": self.quickdraw["record_time"],
                 "record_holder": self.quickdraw["record_holder"],
             },
+            "social_credit": self.social_credit,
         }
         info_file = Path(__file__).with_name("info.json")
         with info_file.open("w") as info:
