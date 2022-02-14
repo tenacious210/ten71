@@ -101,12 +101,16 @@ def obamna_command(msg):
 @dggbot.command(["creditcheck", "cc"])
 def creditcheck_command(msg):
     if not dggbot.cooldowns["creditcheck"]:
-        if msg.nick in dggbot.social_credit.keys():
+        if " " in msg.data:
+            name = msg.data.split(maxsplit=1)[1]
+        else:
+            name = msg.nick
+        if name in dggbot.social_credit.keys():
             dggbot.queue_send(
-                f"{msg.nick}'s social credit score is: {dggbot.social_credit[msg.nick]} BINGQILIN",
+                f"{name}'s social credit score is: {dggbot.social_credit[name]} BINGQILIN",
             )
         else:
-            dggbot.queue_send(f"{msg.nick} has no social credit history MMMM")
+            dggbot.queue_send(f"{name} has no social credit history MMMM")
         dggbot.start_cooldown("creditcheck", 60)
 
 
