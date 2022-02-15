@@ -125,7 +125,10 @@ def creditcheck_command(msg):
                 f"{name} has no social credit history MMMM",
                 is_private(msg),
             )
-        # dggbot.start_cooldown("creditcheck", 900)
+    elif not is_admin(msg) and not is_private(msg):
+        dggbot.queue_send(
+            "You can't use that command in chat, but you can use it here dggL", msg.nick
+        )
 
 
 @dggbot.command(["quickdraw", "qd"])
