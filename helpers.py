@@ -21,7 +21,6 @@ class CustomBot(DGGBot):
         owner,
         qd_record,
         qd_rec_holder,
-        last_message,
         social_credit,
         prefix="!",
     ):
@@ -36,7 +35,7 @@ class CustomBot(DGGBot):
             "obamna": False,
             "creditcheck": False,
         }
-        self.last_message = {"content": last_message, "time": datetime.now()}
+        self.last_message = {"content": "", "time": datetime.now()}
         self.quickdraw = {
             "time_started": datetime.now(),
             "waiting": False,
@@ -45,18 +44,18 @@ class CustomBot(DGGBot):
         }
         self.social_credit = social_credit
 
-    def queue_send(self, message: str):
+    def queue_send(self, payload: str, pm_nick=False):
         current_time = datetime.now()
-        if message == self.last_message["content"]:
-            message += " ."
+        if payload == self.last_message["content"]:
+            payload += " ."
         if (current_time - self.last_message["time"]).total_seconds() < 1:
             time.sleep(1)
-        self.send(message)
-        # For debugging:
-        # self.send_privmsg("tena", message)
-        self.last_message["content"] = message
+        if pm_nick:
+            self.send_privmsg(pm_nick, payload)
+        else:
+            self.send(payload)
+        self.last_message["content"] = payload
         self.last_message["time"] = current_time
-        self.write_to_info()
 
     def start_quickdraw(self, *args):
         if self.enabled:
@@ -86,16 +85,17 @@ class CustomBot(DGGBot):
     def end_cooldown(self, key):
         self.cooldowns[key] = False
 
-    def write_to_info(self):
-        info_dict = {
-            "last_message": self.last_message["content"],
-            "quickdraw_stats": {
-                "record_time": self.quickdraw["record_time"],
-                "record_holder": self.quickdraw["record_holder"],
-            },
-            "social_credit": self.social_credit,
+    def write_to_qd(self):
+        qd_dict = {
+            "record_time": self.quickdraw["record_time"],
+            "record_holder": self.quickdraw["record_holder"],
         }
-        info_file = Path(__file__).with_name("info.json")
-        with info_file.open("w") as info:
-            json.dump(info_dict, info)
+        qd_file = Path(__file__).with_name("quickdraw.json")
+        with qd_file.open("w") as qd:
+            json.dump(qd_dict, qd)
         return
+
+    def write_to_sc(self):
+        sc_file = Path(__file__).with_name("social_credit.json")
+        with sc_file.open("w") as sc:
+            json.dump(self.social_credit, sc)
