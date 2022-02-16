@@ -73,7 +73,7 @@ class CustomBot(DGGBot):
             ending_message += "New record!"
             self.quickdraw["record_time"] = response_time
             self.quickdraw["record_holder"] = msg.nick
-            self.write_to_info()
+            self.write_to_qd()
         else:
             ending_message += f'Record time: {self.quickdraw["record_time"]} by {self.quickdraw["record_holder"]}'
         self.queue_send(ending_message)
